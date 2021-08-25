@@ -102,4 +102,4 @@ if __name__=="__main__" :
     X_val,y_val = get_X_y(data_val,sample_size=200)
     X_test,y_test = get_X_y(data_test,sample_size=200)
     y_train_cat,y_val_cat,y_test_cat = cat_encoder (y_train,y_val,y_test)
-    print("Preprocess finished")
+    print("Preprocess steps finished")
