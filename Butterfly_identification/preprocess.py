@@ -20,28 +20,69 @@ def get_data (data=["train","val","test"],data_path='../raw_data/splits/'):
         result.append(data_dict[i])
     return tuple(result)
 
+
 def feature_engineering(df,images_path='../raw_data/IMG/'):
     '''That function add a species columns thanks to the genus and epithet columns'''
     df["path_to_image"]=images_path+df["image_name"]
     df['species'] = df['genus']+'_'+df['specific_epithet'] 
     return df
 
+
 def get_data_minphoto(df, nb_min_photo_by_species = 25):
-    '''This function allows to select only 25 pictures of each species (dropping those with less then 25 picures)'''
-    # Détermine les espèces à garder
+    '''This function allows to select only 25 (by default) pictures of each species (dropping those with less then 25 picures)'''
     tri_species = pd.DataFrame(df['species'].value_counts()).reset_index()
     tri_species.columns = ['species','nombre']
     tri_species['nombre'] = tri_species['nombre'].astype('uint16')
-    # Enregistre les espèces à garder
+    # Save the species to keep
     keep_species = tri_species[tri_species['nombre']>=nb_min_photo_by_species]['species']
     keep_species = np.array(keep_species)
-    # Créer une colonne pour filter
+    # Create a column to filter
     df['triage'] = [ i in keep_species for i in df['species']]
     # Récupère le DF en filtrant sur les espèces de plus de 20 photos
     df_clean = df.loc[df['triage'] == True].copy()
-    # Drop la colonne de filtre
+    # Drop the column filter
     df_clean.drop('triage', axis = 1, inplace = True)
     return df_clean
+
+
+def filter_val_test(df_train, df_to_filter):
+    ''' This function remove from df_to_filter (df_val or df_test) all species that does not exist in train data'''
+    espece = df_train.species.unique()
+    def filtre(x):
+        ''' This function return if a species is in the espece liste of the train data''' 
+        if x not in espece:
+            return False
+        else :
+            return True
+    # Apply the function to create a column to filter
+    df_to_filter['filter'] = df_to_filter['species'].apply(filtre)
+    df_filtered = df_to_filter.loc[df_to_filter['filter'] == True].copy()
+    # Drop the column filter
+    df_filtered.drop('filter', axis = 1, inplace = True)
+    df_to_filter.drop('filter', axis = 1, inplace = True)
+    return df_filtered
+
+
+def resampling(df):
+    ''' This function return a balanced dataset from df, based on the smallest class'''
+    count = pd.DataFrame(df['species'].value_counts().reset_index())
+    count.columns = ['species', 'nombre']
+    # Define the size of the smallest class
+    minimum = min(count['nombre'])
+    begin = True
+    for i in count['species']:
+        # Create the new dataframe with the first species
+        if begin:
+            new_df = df.loc[df['species'] == i].sample(minimum)
+            begin = False
+        # Sample for each species
+        elif i not in new_df['species']:
+            add_to = df.loc[df['species'] == i].sample(minimum)
+            new_df = pd.concat([new_df, add_to],axis = 0)
+    # Shuffle the dataset
+    new_df.sample(frac=1)
+    return new_df
+
 
 def get_X_y(df,sampling=False,sample_size=None,resize = False,size = (448,448) ):
     '''This function return the features and target from a dataset'''
@@ -55,14 +96,16 @@ def get_X_y(df,sampling=False,sample_size=None,resize = False,size = (448,448) )
         image.append(np.array(img))
     X = np.array(image)
     y = np.array(df['species'])
-    #careful, the feature X here is not resized and the target need to be reshaped before the onehotencoder
+    # Careful, the feature X here is not resized and the target need to be reshaped before the onehotencoder
     return X, y
+
 
 def image_resizing(img,size=None):
     '''Function that resize a picture. Size is a tuple of 2 integers : (lenght,width).'''
     if size :
         img = img.resize(size)
     return img
+
 
 def cat_encoder (y_train,y_val=None,y_test=None):
     '''This function return encoded targets : (y_train_cat,y_val_cat,y_test_cat).'''
@@ -83,6 +126,7 @@ def cat_encoder (y_train,y_val=None,y_test=None):
         y_test_cat = ohe.transform(y_test)
         result.append(y_test_cat)
     return tuple(result)
+
 
 if __name__=="__main__" :
     data_train,data_val,data_test = get_data (data=["train","val","test"])
