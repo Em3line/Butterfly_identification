@@ -30,4 +30,3 @@ sklearn
 #joblib
 #memoized-property
 #termcolor
-PIL

@@ -2,13 +2,66 @@ import pandas as pd
 import numpy as np
 from PIL import Image
 from sklearn.preprocessing import OneHotEncoder
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras import layers, models, Sequential
 
+
+def get_data (data=["train","val","test"],data_path='../raw_data/splits/'):
+    '''Function to get Train, Val and Test data. That function get in input a list of
+    the desired data and return a tuple containing the 3 datasets : 
+    (data_train,data_val,data_test)'''
+
+    data_train = pd.read_json(data_path + 'train.json').T
+    data_val = pd.read_json(data_path + 'val.json').T
+    data_test = pd.read_json(data_path + 'test.json').T
+
+    data_dict = {"train":data_train,"val":data_val,"test":data_test}
+
+    result = []
+    for i in data :
+        result.append(data_dict[i])
+    return tuple(result)
+
+def feature_engineering(df,images_path='../raw_data/IMG/'):
+    '''That function add a species columns thanks to the genus and epithet columns'''
+    df["path_to_image"]=images_path+df["image_name"]
+    df['species'] = df['genus']+'_'+df['specific_epithet'] 
+    return df
+
+def get_data_minphoto(df, nb_min_photo_by_species = 25):
+    '''This function allows to select only 25 pictures of each species (dropping those with less then 25 picures)'''
+    # Détermine les espèces à garder
+    tri_species = pd.DataFrame(df['species'].value_counts()).reset_index()
+    tri_species.columns = ['species','nombre']
+    tri_species['nombre'] = tri_species['nombre'].astype('uint16')
+    # Enregistre les espèces à garder
+    keep_species = tri_species[tri_species['nombre']>=nb_min_photo_by_species]['species']
+    keep_species = np.array(keep_species)
+    # Créer une colonne pour filter
+    df['triage'] = [ i in keep_species for i in df['species']]
+    # Récupère le DF en filtrant sur les espèces de plus de 20 photos
+    df_clean = df.loc[df['triage'] == True].copy()
+    # Drop la colonne de filtre
+    df_clean.drop('triage', axis = 1, inplace = True)
+    return df_clean
+
+def get_X_y(df,sampling=False,sample_size=None,resize = False,size = (448,448) ):
+    '''This function return the features and target from a dataset'''
+    if sampling :
+        df = df.sample(sample_size, random_state = 818)
+    image = []
+    for i in df['path_to_image'] :
+        img = Image.open(i)
+        if resize :
+            img=img.resize(size)
+        image.append(np.array(img))
+    X = np.array(image)
+    y = np.array(df['species'])
+    #careful, the feature X here is not resized and the target need to be reshaped before the onehotencoder
+    return X, y
 
 def image_resizing(img,size=None):
     '''Function that resize a picture. Size is a tuple of 2 integers : (lenght,width).'''
-    img = img.resize(size)
+    if size :
+        img = img.resize(size)
     return img
 
 def cat_encoder (y_train,y_val=None,y_test=None):
@@ -30,68 +83,6 @@ def cat_encoder (y_train,y_val=None,y_test=None):
         y_test_cat = ohe.transform(y_test)
         result.append(y_test_cat)
     return tuple(result)
-
-def feature_engineering(df):
-    '''That function add a species columns thanks to the genus and epithet columns'''
-    df["path_to_image"]="../raw_data/IMG/"+df["image_name"]
-    df['species'] = df['genus']+'_'+df['specific_epithet'] 
-    return df
-
-def set_nontrainable_layers(imported_model):
-    '''set imported model layers' as non trainable'''
-    imported_model.trainable = False
-    return imported_model
-
-def get_X_y(df,sample_size):
-    '''This function return the features and target from a dataset'''
-    data_sample = df.sample(sample_size, random_state = 818)
-    image = []
-    for i in data_sample['path_to_image'] :
-        img = Image.open(i)
-        #img = image_resizing(img)
-        image.append(np.array(img))
-    X = np.array(image)
-    y = np.array(data_sample['species'])
-    #careful, the feature X here is not resized and the target need to be reshaped before the onehotencoder
-    return X, y
-
-def get_data (data=["train","val","test"]):
-    '''Function to get Train, Val and Test data. That function get in input a list of
-    the desired data and return a tuple containing the 3 datasets : 
-    (data_train,data_val,data_test)'''
-
-    data_train = pd.read_json('../raw_data/splits/train.json').T
-    data_val = pd.read_json('../raw_data/splits/val.json').T
-    data_test = pd.read_json('../raw_data/splits/test.json').T
-
-    data_dict = {"train":data_train,"val":data_val,"test":data_test}
-
-    result = []
-    for i in data :
-        result.append(data_dict[i])
-    return tuple(result)
-
-def get_updated_model(imported_model,target):
-    '''Take a pre-trained model, set its parameters as non-trainables, and add additional 
-    trainable layers'''
-    
-    n_classes = pd.Series(target).nunique()
-    imported_model = set_nontrainable_layers(imported_model)
-
-    flattening_layer = layers.Flatten()
-    dense_layer = layers.Dense(130, activation='relu')
-    prediction_layer = layers.Dense(n_classes, activation='softmax')
-
-    model = Sequential([imported_model,flattening_layer,dense_layer,prediction_layer])
-    return model
-
-def model_compile(model,learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-07):
-    adam = Adam(learning_rate=learning_rate, beta_1=beta_1, beta_2=beta_2, epsilon=epsilon, amsgrad=False,
-    name='Adam', **kwargs)
-    model.compile(loss='categorical_crossentropy',
-              optimizer=adam,
-              metrics=['accuracy'])
-    return model
 
 if __name__=="__main__" :
     data_train,data_val,data_test = get_data (data=["train","val","test"])
