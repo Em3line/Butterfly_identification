@@ -10,6 +10,7 @@ pandas
 scikit-learn
 tensorflow
 visualkeras
+sklearn
 
 # tests/linter
 #black
@@ -29,3 +30,4 @@ visualkeras
 #joblib
 #memoized-property
 #termcolor
+PIL
