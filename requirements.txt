@@ -10,6 +10,7 @@ pandas
 scikit-learn
 tensorflow
 visualkeras
+sklearn
 
 # tests/linter
 #black
