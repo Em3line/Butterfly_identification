@@ -2,16 +2,20 @@ import pandas as pd
 import numpy as np
 from PIL import Image
 from sklearn.preprocessing import OneHotEncoder
+import os
 
 
-def get_data (data=["train","val","test"],data_path='../raw_data/splits/'):
+def get_data (data=["train","val","test"]):
     '''Function to get Train, Val and Test data. That function get in input a list of
     the desired data and return a tuple containing the 3 datasets : 
     (data_train,data_val,data_test)'''
-
+    parts =  os.getcwd().split("/")
+    ABS_PATH ="/"+parts[1]+"/"+parts[2]
+    data_path=ABS_PATH+'/code/Em3line/Butterfly_identification/raw_data/splits/'
+    
     data_train = pd.read_json(data_path + 'train.json').T
-    data_val = pd.read_json(data_path + 'val.json').T
-    data_test = pd.read_json(data_path + 'test.json').T
+    data_val = pd.read_json(data_path+'val.json').T
+    data_test = pd.read_json(data_path+'test.json').T
 
     data_dict = {"train":data_train,"val":data_val,"test":data_test}
 
@@ -21,15 +25,25 @@ def get_data (data=["train","val","test"],data_path='../raw_data/splits/'):
     return tuple(result)
 
 
-def feature_engineering(df,images_path='../raw_data/IMG/'):
-    '''That function add a species columns thanks to the genus and epithet columns'''
-    df["path_to_image"]=images_path+df["image_name"]
-    df['species'] = df['genus']+'_'+df['specific_epithet'] 
-    return df
+def feature_engineering(df_train,df_val,df_test):
+    '''That function add 2 new columns : -a species columns thanks to the genus and epithet columns
+                                         -a path_to_image columns that gives the "species" directory and the 
+                                         image name path'''
+    # --------------------------------- Creation of the species column --------------------------------------
+    df_train['species'] = df_train['genus']+'_'+df_train['specific_epithet'] 
+    df_val['species'] = df_val['genus']+'_'+df_val['specific_epithet']
+    df_test['species'] = df_test['genus']+'_'+df_test['specific_epithet']
+
+    df_train['image_path'] = df_train['species']+'/'+df_train['image_name']
+    df_val['image_path'] = df_val['species']+'/'+df_val['image_name']
+    df_test['image_path'] = df_test['species']+'/'+df_test['image_name']   
+
+    return (df_train,df_val,df_test)
 
 
 def get_data_minphoto(df, nb_min_photo_by_species = 25):
-    '''This function allows to select only 25 (by default) pictures of each species (dropping those with less then 25 picures)'''
+    '''This function allows to select only 25 (by default) pictures of each species (dropping those with less 
+    then 25 picures)'''
     tri_species = pd.DataFrame(df['species'].value_counts()).reset_index()
     tri_species.columns = ['species','nombre']
     tri_species['nombre'] = tri_species['nombre'].astype('uint16')
