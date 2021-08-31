@@ -140,11 +140,11 @@ def get_updated_ResNet(train_ds, val_ds, test_ds, IMG_SIZE,  patience=2, learnin
     
     test_accuracy_vgg = res_vgg[-1]
     
-    return (f"test_accuracy = {round(test_accuracy_vgg,2)*100} %"), history
+    return (f"test_accuracy = {round(test_accuracy_vgg,2)*100} %"), history, model
 
 #!!!!!!!!!!!!!!!!!!!!!!!! à modifier !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 def get_updated_VGG16(train_ds, val_ds, test_ds, IMG_SIZE=128,  patience=2, learning_rate=0.001, nb_epochs=15, 
-                      nb_couches_dense_layer=130,Aug = False,rot = 0.2):
+                      nb_couches_dense_layer=130,Aug = True,rot = 0.2):
     '''Take a pre-trained model : ("VGG16" or "ResNet"), set its parameters as non-trainables, and add additional 
     trainable layers with a free number of neurons before compiling and fitting'''
     imported_model = VGG16(weights="imagenet", include_top=False, input_shape = (IMG_SIZE,IMG_SIZE,3))
@@ -237,12 +237,9 @@ if __name__=="__main__" :
     print(" \n>>>>>>>>>>>>>>>     Preprocess steps finished     <<<<<<<<<<<<<<<\n \n ")
     train_ds,val_ds,test_ds = get_generators(df_train, df_val, df_test)
     print(" \n>>>>>>>>>>>>>>>        Generators created         <<<<<<<<<<<<<<<\n \n ")
-    model = get_updated_VGG16(train_ds, val_ds, test_ds, IMG_SIZE=128,  patience=2, learning_rate=0.001, nb_epochs=15, 
+    accuracy,history,model = get_updated_VGG16(train_ds, val_ds, test_ds, IMG_SIZE=128,  patience=2, learning_rate=0.001, nb_epochs=1, 
                       nb_couches_dense_layer=130,Aug = False,rot = 0.2)
-                      model.save("référence_modèle") #!!!!!!!!!!!!!!!!!!!!!!!! à modifier <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    accuracy,history = model
+    model.save("référence modèle") #!!!!!!!!!!!!!!!!!!!!!!!! à modifier <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     print(" \n>>>>>>>>>>>>>>>      Model built and trained      <<<<<<<<<<<<<<<\n \n ")
     print(accuracy)
     plot_history(history)
-
-    print(" \n>>>>>>>>>>>>>>>            Predictions            <<<<<<<<<<<<<<<\n \n ")
