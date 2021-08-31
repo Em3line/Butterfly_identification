@@ -1,4 +1,4 @@
-from tensorflow.keras.models import load_model
+from tensorflow.keras.models import load_model as load_keras_model
 from tensorflow.keras.preprocessing.image import img_to_array
 import numpy as np
 from PIL import Image
@@ -8,9 +8,7 @@ from tensorflow.keras.applications.imagenet_utils import (decode_predictions,
 def load_model():
     # loads and returns teh pretrained model
     filepath = "/Users/prunelle/code/Em3line/Butterfly_identification/raw_data/models/API_FTW"
-    model =load_model(
-    filepath, custom_objects=None, compile=True, options=None
-)
+    model = load_keras_model(filepath, compile=True, options=None)
     return model
 
 def prepare_image(image, target):

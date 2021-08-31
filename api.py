@@ -4,9 +4,21 @@ import pandas as pd
 import numpy as np
 import pickle
 from tensorflow.keras.applications.imagenet_utils import (decode_predictions)
+from model import load_model, predict, prepare_image
+from pydantic import BaseModel
+from typing import List
+from io import BytesIO
+from PIL import Image
+from fastapi import FastAPI, File, HTTPException, UploadFile
+import uvicorn
 
+#model = load_model()
 
-
+#Define the response JSON
+# class Prediction(BaseModel):
+#     filename: str
+#     content_type: str
+#     predictions: List[dict] = []
 app = FastAPI()
 
 app.add_middleware(
@@ -19,39 +31,52 @@ app.add_middleware(
 
 @app.get("/test-operation-bidon")
 def test_operation_bidon(entered_data):
-    return (f"test-operation-bidon : {int(entered_data)*2} millions de papillons")
+    return (f"{int(entered_data)*2} millions de papillons")
 
-@app.get("/predict-image")
-def predict_image(url):
-    pkl_file = open(url, 'rb')
-    image = pickle.load(pkl_file)
-    pkl_file.close()
-    return ("image ok")
-    # uploaded_file = np.array(uploaded_file)
-    # return uploaded_file.shape
+# @app.get("/predict-image")
+# def predict_image(url):
+#     pkl_file = open(url, 'rb')
+#     image = pickle.load(pkl_file)
+#     im = Image.open(url)
+#     im.show()
+#     pkl_file.close()
+#     return ("image ok")
 
-@app.post("/predict-specy")
-def predict_specy(url_image, model):
-    pkl_file = open(url_image, 'rb')
-    image_papillon = pickle.load(pkl_file)
-    pkl_file.close()
-    results = decode_predictions(model.predict(image_papillon), 2)[0]
-    response = [
-        {"class": result[1], "score": float(round(result[2], 3))} for result in results
-    ]
-    return response
-    # image = Image.open(uploaded_file)
-    # img_array = np.array(image)
-    # return img_array
+@app.post("/predict")
+async def prediction(file: UploadFile = File(...)):
+    # Initialize the data dictionnary that will be returned
+    print('before file check')
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="File provided is not an image.")
+    content = await file.read()
+    image = Image.open(BytesIO(content)).convert("RGB")
+    #Faire la prédiction en utilisant l'image
+    return "toto"
 
-@app.get("/predict")
-def predict(uploaded_file):
-    return (pd.DataFrame([[97.64,87.33,67.24,20.1,1.3],
-             ['nom_latin1','nom_latin2','nom_latin3', 'nom_latin4', 'nom_latin5'],
-            ['nom_commun1','nom_commun2','nom_commun3', 'nom_commun4', 'nom_commun5']]))
+# @app.post("/predict", response_model=Prediction)
+# async def prediction(file: UploadFile = File(...)):
+#     # Ensure that the file is an image
+#     content = await file.read()
+#     image = Image.open(BytesIO(content)).convert("RGB")
+#     # preprocess the image and prepare it for classification
+#     image = prepare_image(image, target=(224, 224))
+#     response = predict(image, model)
+#     # return the response as a JSON
+#     return {
+#         "filename": file.filename,
+#         "content_type": file.content_type,
+#         "predictions": response,
+#     }
+# if __name__ == "__main__":
+#     uvicorn.run("main:app", host="0.0.0.0", port=5000)
 
-# joblib.load du model
-# .predict sur DataFrame
-
-# liste de résultats
-# récupérer éléments zéro
+# @app.post("/predict-specy", response_model=Prediction)
+# def predict_specy(url_image, model):
+#     pkl_file = open(url_image, 'rb')
+#     image_papillon = pickle.load(pkl_file)
+#     pkl_file.close()
+#     results = decode_predictions(model.predict(image_papillon), 2)[0]
+#     response = [
+#         {"class": result[1], "score": float(round(result[2], 3))} for result in results
+#     ]
+#     return response
