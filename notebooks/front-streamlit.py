@@ -8,6 +8,7 @@ from tensorflow.keras.utils import load_img
 import time
 import requests
 import base64
+import pickle
 
 #CSS
 
@@ -75,18 +76,35 @@ if uploaded_file is not None:
     file_details = {"FileName":uploaded_file.name,"FileType":uploaded_file.type,"FileSize":uploaded_file.size}
     st.write(file_details)
 
-def jpg_image_to_array(image_path):
-  """
-  Loads JPEG image into 3D Numpy array of shape
-  (width, height, channels)
-  """
-  with Image.open(image_path) as image:
-    im_arr = np.fromstring(image.tobytes(), dtype=np.uint8)
-    im_arr = im_arr.reshape((image.size[1], image.size[0], 3))
-  return im_arr
+#def jpg_image_to_array(image_path):
+#   """
+#   Loads JPEG image into 3D Numpy array of shape
+#   (width, height, channels)
+#   """
+#   with Image.open(image_path) as image:
+#     im_arr = np.fromstring(image.tobytes(), dtype=np.uint8)
+#     im_arr = im_arr.reshape((image.size[1], image.size[0], 3))
+#   return im_arr
 
-if uploaded_file is not None:
-    st.write(jpg_image_to_array(uploaded_file))
+# if uploaded_file is not None:
+#     st.write(jpg_image_to_array(uploaded_file))
+
+st.markdown("""# Convertir au format pickle""")
+url_image = "/Users/prunelle/Downloads/test_image_pickel.pkl"
+file = open(url_image, 'wb')
+# Pickle dictionary using protocol 0.
+pickle.dump(uploaded_file, file)
+file.close()
+
+
+
+# st.markdown("""# Mettre image au bon format""")
+# if not uploaded_file.content_type.startswith("image/"):
+#     raise HTTPException(status_code=400, detail="File provided is not an image.")
+# content = await uploaded_file.read()
+# image = Image.open(BytesIO(content)).convert("RGB")
+# # preprocess the image and prepare it for classification
+# image = prepare_image(image, target=(224, 224))
 
 if uploaded_file is not None:
     image = Image.open(uploaded_file)
@@ -132,32 +150,37 @@ if uploaded_file is not None:
 # st.button({test})
 
 #retour API test
-st.markdown("""# API TEST BIDON""")
+st.markdown("""# API TEST MULTIPLICATION PAPILLONS""")
 entered_data = int(st.slider('Entrer le nombre de papillons', 1, 6, 1))
 url1 = 'http://127.0.0.1:8000/test-operation-bidon'
 parameters = dict(entered_data = entered_data)
 st.markdown(requests.get(url1, params = parameters).json())
 
-#retour API test image
+
 def encode_image(image):
     return base64.b64encode(image)
 
+#retour API test image
 if uploaded_file is not None:
-    parameters2 = dict(image = jpg_image_to_array(uploaded_file))
     st.markdown("""# API TEST IMAGE""")
+    parameters2 = dict(url = url_image)
+    url2 = 'http://127.0.0.1:8000/predict-image'
+    st.markdown(requests.get(url2, params = parameters2).json())
+
+#retour API test model
+if uploaded_file is not None:
+    st.markdown("""# API TEST MODEL""")
+    parameters2 = dict(url = url_image)
     url2 = 'http://127.0.0.1:8000/predict-image'
     st.markdown(requests.get(url2, params = parameters2).json())
 
 #affichage des résultats / retour API
-# url = 'https://taxifare.lewagon.ai/predict'
-# st.success(requests.get(url, uploaded_file).json())
 
 def data_transformation(df):
     data = df.T
     data["path_to_image"]="../raw_data/IMG/"+data["image_name"]
     data['species'] = data['genus']+' '+data['specific_epithet']
     return data
-
 
 df = data_transformation(pd.read_json('../raw_data/splits/train.json'))
 
