@@ -55,6 +55,11 @@ def get_generators(df_train,df_val,df_test, VGG16 = True):
     PATH_VAL = ABS_PATH + '/code/Em3line/Butterfly_identification/raw_data/IGM_labels/Val/'
     PATH_TEST = ABS_PATH + '/code/Em3line/Butterfly_identification/raw_data/IGM_labels/Test/'
     print(PATH_TEST)
+    
+    df_train = preproc.get_data_minphoto(df_train)
+    df_train = preproc.resampling(df_train)
+    df_val = preproc.filter_val_test(df_train, df_val)
+    df_test = preproc.filter_val_test(df_train, df_test)
 
     black_list = list(PATH_TRAIN + df_train['image_path'])
     black_list_val = list(PATH_VAL + df_val['image_path'])
