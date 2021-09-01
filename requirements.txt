@@ -20,6 +20,10 @@ sklearn
 #yapf
 
 # API
+fastapi
+uvicorn
+streamlit
+pickle
 #gcsfs
 #google-cloud-storage
 #mlflow
