@@ -12,14 +12,14 @@ from PIL import Image
 from fastapi import FastAPI, File, HTTPException, UploadFile
 import uvicorn
 
-#model = load_model()
+# model = load_model()
 
-#Define the response JSON
+# #Define the response JSON
 # class Prediction(BaseModel):
 #     filename: str
 #     content_type: str
 #     predictions: List[dict] = []
-app = FastAPI()
+# app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
@@ -42,6 +42,7 @@ def test_operation_bidon(entered_data):
 #     pkl_file.close()
 #     return ("image ok")
 
+#code qui fonctionne (Alexandre)
 @app.post("/predict")
 async def prediction(file: UploadFile = File(...)):
     # Initialize the data dictionnary that will be returned
@@ -52,6 +53,24 @@ async def prediction(file: UploadFile = File(...)):
     image = Image.open(BytesIO(content)).convert("RGB")
     #Faire la prédiction en utilisant l'image
     return "toto"
+
+# @app.post("/predict")
+# async def prediction(file: UploadFile = File(...)):
+#     # Initialize the data dictionnary that will be returned
+#     print('before file check')
+#     if not file.content_type.startswith("image/"):
+#         raise HTTPException(status_code=400, detail="File provided is not an image.")
+#     content = await file.read()
+#     image = Image.open(BytesIO(content)).convert("RGB")
+#     #Faire la prédiction en utilisant l'image
+#     image = prepare_image(image, target=(224, 224))
+#     response = predict(image, model)
+#     # return the response as a JSON
+#     return {
+#         "filename": file.filename,
+#         "content_type": file.content_type,
+#         "predictions": response,
+#     }
 
 # @app.post("/predict", response_model=Prediction)
 # async def prediction(file: UploadFile = File(...)):

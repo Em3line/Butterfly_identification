@@ -125,7 +125,7 @@ if check1:
 #     url2 = 'http://127.0.0.1:8000/predict-image'
 #     st.markdown(requests.get(url2, params = parameters2).json())
 
-#retour API test image en entrée renvoie dictionnaire en sortie
+#code qui fonctionne (Alexandre)
 if check3:
     st.markdown("""# API TEST IMAGE 2""")
     #parameters3 = dict(file = uploaded_file)
@@ -137,6 +137,15 @@ if check3:
     st.warning('Photo envoyée avec succès !')
     #st.markdown(requests.post(url2, params = parameters3).json())
 
+# if check3:
+#     st.markdown("""# API TEST IMAGE 2""")
+#     #parameters3 = dict(file = uploaded_file)
+#     url2 = 'http://127.0.0.1:8000/predict'
+#     response = requests.post(
+#         url2, files={"file": ("media", io.BytesIO(uploaded_file.read()), "image/jpeg")}
+#     )
+#     st.markdown(response)
+#     st.warning('Photo envoyée avec succès !')
 
 
 #retour API test model
