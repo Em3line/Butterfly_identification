@@ -9,8 +9,10 @@ numpy
 pandas
 scikit-learn
 tensorflow
-visualkeras
 sklearn
+matplotlib
+pillow
+
 
 # tests/linter
 #black
@@ -23,11 +25,7 @@ sklearn
 fastapi
 uvicorn
 streamlit
-pickle
-#gcsfs
-#google-cloud-storage
-#mlflow
-#s3fs
+pickleshare
 
 # utilities
 #six>=1.14
