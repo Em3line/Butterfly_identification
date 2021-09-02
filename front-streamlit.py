@@ -1,14 +1,12 @@
-from fastapi import params
+#from fastapi import params
 import streamlit as st
 from PIL import Image
-import numpy as np
-import pandas as pd
-from tensorflow.keras.utils import load_img
+#import numpy as np
+#import pandas as pd
 import time
 import requests
 import pickle
 import base64
-
 
 
 #CSS
