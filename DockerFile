@@ -4,10 +4,15 @@ FROM python:3.8.6-buster
 COPY app /app
 COPY requirements.txt /requirements.txt
 
+COPY raw_data/Docker/Photos /raw_data
+COPY raw_data/Docker/2-RES-STYLE /model
+COPY raw_data/Docker/Pickle /Pickle
+COPY raw_data/Docker/species_table /species_table
+COPY raw_data/Docker/table_commun.json /table_commun.json
+
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
-CMD uvicorn #app.api:app# --host 0.0.0.0
-CMD front-streamlit
+CMD uvicorn API.api:app --host 0.0.0.0 --port $PORT
 
 #to run the container : docker run -p 8080:8000 api
