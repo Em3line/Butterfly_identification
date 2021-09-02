@@ -1,20 +1,19 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import pandas as pd
-import numpy as np
+# import pandas as pd
+# import numpy as np
 import pickle
-from tensorflow.keras.applications.imagenet_utils import (decode_predictions)
+# from tensorflow.keras.applications.imagenet_utils import decode_predictions
 from model import load_model, predict, prepare_image, get_prediction_pictures
 from pydantic import BaseModel
 from typing import List
-from io import BytesIO, StringIO
-from PIL import Image
-from fastapi import FastAPI, File, HTTPException, UploadFile
-import uvicorn
+from fastapi import FastAPI #, File, HTTPException, UploadFile
 import matplotlib.pyplot as plt
+
 
 # bloc ci-dessous décomenté lors du fonctionnement de l'api alexandre
 model = load_model()
+
 
 #Define the response JSON
 class Prediction(BaseModel):
@@ -22,7 +21,9 @@ class Prediction(BaseModel):
     content_type: str
     predictions: List[dict] = []
 
+
 app = FastAPI()
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -35,6 +36,7 @@ app.add_middleware(
 @app.get("/test-operation-bidon")
 def test_operation_bidon(entered_data):
     return (f"{int(entered_data)*2} millions de papillons")
+
 
 @app.get("/predict-image")
 def predict_image(url):
@@ -52,6 +54,8 @@ def predict_image(url):
     return dico
 
 
+#from io import BytesIO, StringIO
+#from PIL import Image
 #code qui fonctionne (Alexandre)
 # @app.post("/predict")
 # async def prediction(file: UploadFile = File(...)):
