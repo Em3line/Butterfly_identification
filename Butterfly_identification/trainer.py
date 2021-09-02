@@ -13,7 +13,8 @@ from tensorflow.io import decode_jpeg, read_file
 from tensorflow import argmax
 import matplotlib.pyplot as plt
 import os
-import playsound
+from tensorflow.compat.v1 import ConfigProto , Session, InteractiveSession
+from tensorflow.compat.v1.keras.backend import set_session
 sound_file = '/Butterfly_identification.treasure.mp3' #un son dans votre ordi ou une url
 
 AUTOTUNE = AUTOTUNE
@@ -91,7 +92,8 @@ def get_generators(df_train,df_val,df_test, VGG16 = True):
 
 def set_nontrainable_layers(imported_model):
     '''set imported model layers' as non trainable'''
-    imported_model.trainable = False
+    for layer in imported_model.layers[:-7]:
+        layer.trainable = False
     return imported_model
 
 def model_compile(model,learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-07):
@@ -124,14 +126,13 @@ def get_updated_ResNet(train_ds, val_ds, test_ds, IMG_SIZE,  patience=2, learnin
     imported_model = set_nontrainable_layers(imported_model)
     #add last layers
     flattening_layer = layers.Flatten()
-    conv_layer = layers.Conv2D(2000, (8,8), activation='relu')
-    dense_layer = layers.Dense(nb_couches_dense_layer, activation='relu', activity_regularizer=regularizers.L1(0.01))
-    prediction_layer = layers.Dense(n_classes, activation='softmax')
+    dense_layer = layers.Dense(nb_couches_dense_layer, activation='relu')
+    prediction_layer = layers.Dense(228, activation='softmax')
     
     if Aug == True :
-        model = Sequential([data_augmentation,resize_and_rescale,imported_model,flattening_layer,conv_layer,dense_layer,prediction_layer])
+        model = Sequential([data_augmentation,resize_and_rescale,imported_model, flattening_layer,dense_layer,prediction_layer])
     else :
-        model = Sequential([resize_and_rescale,imported_model,flattening_layer,conv_layer,dense_layer,prediction_layer])
+        model = Sequential([resize_and_rescale,imported_model, flattening_layer,dense_layer,prediction_layer])
     #build model
     model = model_compile(model,learning_rate, beta_1=0.9, beta_2=0.999, epsilon=1e-07)
     
@@ -142,7 +143,8 @@ def get_updated_ResNet(train_ds, val_ds, test_ds, IMG_SIZE,  patience=2, learnin
     history = model.fit(train_ds, 
                     validation_data=(val_ds), 
                     epochs=nb_epochs,
-                    callbacks=[es])
+                    callbacks=[es],
+                    verbose=2)
     
     #evaluate model
     res_vgg = model.evaluate(test_ds)
@@ -164,7 +166,9 @@ def get_updated_VGG16(train_ds, val_ds, test_ds, IMG_SIZE=128,  patience=2, lear
     # Set the first layers : 
     data_augmentation = Sequential([
                 layers.experimental.preprocessing.RandomFlip("horizontal_and_vertical"),
+                layers.experimental.preprocessing.RandomContrast(0.3),
                 layers.experimental.preprocessing.RandomRotation(rot),
+                layers.experimental.preprocessing.RandomCrop(256,256)
                 ])
 
     resize_and_rescale = Sequential([
@@ -175,28 +179,29 @@ def get_updated_VGG16(train_ds, val_ds, test_ds, IMG_SIZE=128,  patience=2, lear
     # Set the first layers of the downloaded model to be untrainable
     imported_model = set_nontrainable_layers(imported_model)
     #add last layers
-    
-    conv_layer = layers.Conv2D(2000, (2,2), activation='relu')
+    #conv_layer = layers.Conv2D(1000, (2,2), activation='relu')
     flattening_layer = layers.Flatten()
+    dropout_layer = layers.Dropout(.3)
     dense_layer = layers.Dense(nb_couches_dense_layer, activation='relu')
     prediction_layer = layers.Dense(228, activation='softmax')
     
     if Aug == True :
-        model = Sequential([data_augmentation,resize_and_rescale,imported_model,conv_layer,flattening_layer,dense_layer,prediction_layer])
+        model = Sequential([data_augmentation,resize_and_rescale,imported_model,flattening_layer,dropout_layer,dense_layer,dropout_layer,prediction_layer])
     else :
-        model = Sequential([resize_and_rescale,imported_model,conv_layer,flattening_layer,dense_layer,prediction_layer])
+        model = Sequential([resize_and_rescale,imported_model,flattening_layer,dropout_layer,dense_layer,dropout_layer,prediction_layer])
     
     #build model
     model = model_compile(model,learning_rate, beta_1=0.9, beta_2=0.999, epsilon=1e-07)
     
     #set earlystopping
-    es = EarlyStopping(monitor='val_loss', patience=patience, verbose=1, restore_best_weights=True)
+    es = EarlyStopping(monitor='val_loss', patience=patience, verbose=0, restore_best_weights=True)
     
     #fit model
     history = model.fit(train_ds, 
                     validation_data=val_ds, 
                     epochs=nb_epochs,
-                    callbacks=[es])
+                    callbacks=[es],
+                    verbose=2)
     
     #evaluate model
     res_vgg = model.evaluate(test_ds)
@@ -241,6 +246,11 @@ def plot_history(history, title='', axs=None, exp_name=""):
 
 
 if __name__=="__main__" :
+    config = ConfigProto()
+    config.gpu_options.per_process_gpu_memory_fraction = 0.6
+    set_session(Session(config=config))
+    config.gpu_options.allow_growth = True
+    session = InteractiveSession(config=config)
     df_train,df_val,df_test = preproc.get_data ()
     df_train,df_val,df_test=preproc.feature_engineering(df_train,df_val,df_test)
     df_train = preproc.get_data_minphoto(df_train, nb_min_photo_by_species = 25)
@@ -250,9 +260,9 @@ if __name__=="__main__" :
     train_ds,val_ds,test_ds = get_generators(df_train, df_val, df_test)
     print(" \n>>>>>>>>>>>>>>>        Generators created         <<<<<<<<<<<<<<<\n \n ")
     accuracy,history,model = get_updated_VGG16(train_ds, val_ds, test_ds, IMG_SIZE=128,  patience=5, learning_rate=0.0001, nb_epochs=50, 
-                      nb_couches_dense_layer=2000,Aug = False,rot = 0.2)
+                      nb_couches_dense_layer=2000 ,Aug = False ,rot = 0.2)
     #!!!!!!!!!!!!!!!!!!!!!!!! à modifier <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    model.save("2-VGG16-20") 
+    model.save("2-VGG-Final") 
     print(" \n>>>>>>>>>>>>>>>      Model built and trained      <<<<<<<<<<<<<<<\n \n ")
     print(accuracy)
     plot_history(history)
