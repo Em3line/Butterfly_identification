@@ -60,8 +60,8 @@ def background_image_style(path):
     </style>
     '''
     return style
-#image_path = "/Users/prunelle/Downloads/9B2F199E-79BF-4EBD-B729-D518A58D1292_1_105_c.jpeg"
-image_path = "/Users/prunelle/Downloads/9eb59fed3bfe7fb6ad4cfbb9aaad2b7e.jpg"
+image_path = "/Users/prunelle/Downloads/9B2F199E-79BF-4EBD-B729-D518A58D1292_1_105_c.jpeg"
+#image_path = "/Users/prunelle/Downloads/9eb59fed3bfe7fb6ad4cfbb9aaad2b7e.jpg"
 image_link = 'https://docs.python.org/3/'
 st.write(background_image_style(image_path), unsafe_allow_html=True)
 
@@ -106,7 +106,10 @@ if uploaded_file is not None:
 
     for j, i in enumerate(dico.keys()):
         st.markdown(f"""## Estimation n°{j+1} : Votre papillon est un *{dico[i][0].replace('_', " ")}*""") #sort le nom de l'espèce en latin
-        st.markdown(f"""### *Probabilité de succès : {round(float(i),3)}*""")
+        if dico[i][2] != np.nan :
+            st.markdown(f"""## Nom commun : {dico[i][2]}""") #sort le nom commun
+        st.markdown(f"""### *Probabilité de la prédiction : {round(float(i),3)}*""")
+
         #st.markdown("")
         pkl_file = open(dico[i][1], 'rb')
         images = pickle.load(pkl_file)
@@ -133,8 +136,6 @@ if uploaded_file is not None:
 #     with col3 :
 #         pass
 
-
-
 #check1= st.checkbox('launch api multiplication papillons')
 #check2 = st.checkbox('launch api test image')
 #check3 = st.checkbox('launch api test image 2')
@@ -146,9 +147,6 @@ if uploaded_file is not None:
 #     url1 = 'http://127.0.0.1:8000/test-operation-bidon'
 #     parameters = dict(entered_data = entered_data)
 #     st.markdown(requests.get(url1, params = parameters).json())
-
-
-
 
 #slider_element.slider("Slide me!", 0, 100, key=session.run_id)
 
