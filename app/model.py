@@ -10,7 +10,7 @@ from tensorflow.keras.applications.imagenet_utils import (decode_predictions,
 
 def load_model():
     # loads and returns teh pretrained model # CHANGE PATH
-    filepath = "raw_data/models/API_FTW"
+    filepath = "/Users/prunelle/code/Em3line/Butterfly_identification/raw_data/Docker/models/API-FTW"
     model = load_keras_model(filepath)
     # compile=True, options=None)
     return model
