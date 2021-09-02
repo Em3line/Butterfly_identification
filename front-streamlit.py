@@ -77,7 +77,7 @@ if uploaded_file is not None:
         st.image(image)
     with col2:
         st.warning('Photo chargée avec succès !')
-        st.markdown("""#### *Vous pouvez lancer une nouvelle prédiction en glissant une nouvelle photo ou bien en fermant avec la croix*
+        st.markdown("""### *Vous pouvez lancer une nouvelle prédiction en glissant une nouvelle photo ou bien en fermant avec la croix*
         """)
     st.markdown("""## ... Lancement de l'algorithme Snapillon ... """)
     latest_iteration = st.empty()
