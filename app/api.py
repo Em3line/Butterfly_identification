@@ -57,6 +57,8 @@ def predict_image(url):
 
 @app.get("/predict-image-str")
 def predict_image(string):
+    print(' toto')
+    print(string)
     with open("imageToSave.jpg", "wb") as fh:
         fh.write(base64.decodebytes(bytes(string, 'utf-8')))
     im = plt.imread("imageToSave.jpg")
