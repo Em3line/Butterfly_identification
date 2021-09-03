@@ -4,12 +4,14 @@ from fastapi.middleware.cors import CORSMiddleware
 # import numpy as np
 import pickle
 # from tensorflow.keras.applications.imagenet_utils import decode_predictions
-from model import load_model, predict, prepare_image, get_prediction_pictures
+from app.model import load_model, predict, prepare_image, get_prediction_pictures
 from pydantic import BaseModel
 from typing import List
 from fastapi import FastAPI #, File, HTTPException, UploadFile
 import matplotlib.pyplot as plt
-
+import base64
+from urllib.parse import unquote, quote
+from PIL import Image
 
 # bloc ci-dessous décomenté lors du fonctionnement de l'api alexandre
 model = load_model()
@@ -53,7 +55,19 @@ def predict_image(url):
         dico[prediction[i]] = (nom_latin, pkl_files)
     return dico
 
-
+@app.get("/predict-image-str")
+def predict_image(string):
+    with open("imageToSave.jpg", "wb") as fh:
+        fh.write(base64.decodebytes(bytes(string, 'utf-8')))
+    im = plt.imread("imageToSave.jpg")
+    image = prepare_image(im)
+    prediction = predict(image, model)
+    dico = {}
+    for i in prediction.keys():
+        nom_latin = i
+        pkl_files = get_prediction_pictures(i)
+        dico[prediction[i]] = (nom_latin, pkl_files)
+    return dico
 #from io import BytesIO, StringIO
 #from PIL import Image
 #code qui fonctionne (Alexandre)
