@@ -60,8 +60,8 @@ def background_image_style(path):
     </style>
     '''
     return style
-#image_path = "/Users/prunelle/Downloads/9B2F199E-79BF-4EBD-B729-D518A58D1292_1_105_c.jpeg"
-image_path = "/Users/prunelle/Downloads/9eb59fed3bfe7fb6ad4cfbb9aaad2b7e.jpg"
+image_path = "/Users/prunelle/Downloads/9B2F199E-79BF-4EBD-B729-D518A58D1292_1_105_c.jpeg"
+#image_path = "/Users/prunelle/Downloads/9eb59fed3bfe7fb6ad4cfbb9aaad2b7e.jpg"
 image_link = 'https://docs.python.org/3/'
 st.write(background_image_style(image_path), unsafe_allow_html=True)
 
