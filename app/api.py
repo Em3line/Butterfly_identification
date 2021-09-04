@@ -55,10 +55,8 @@ def predict_image(url):
         dico[prediction[i]] = (nom_latin, pkl_files)
     return dico
 
-@app.get("/predict-image-str")
+@app.post("/predict-image-str")
 def predict_image(string):
-    print(' toto')
-    print(string)
     with open("imageToSave.jpg", "wb") as fh:
         fh.write(base64.decodebytes(bytes(string, 'utf-8')))
     im = plt.imread("imageToSave.jpg")
