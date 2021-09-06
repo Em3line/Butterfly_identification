@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import base64
 from urllib.parse import unquote, quote
 from PIL import Image
+from starlette.requests import Request
 
 # bloc ci-dessous décomenté lors du fonctionnement de l'api alexandre
 model = load_model()
@@ -55,8 +56,13 @@ def predict_image(url):
         dico[prediction[i]] = (nom_latin, pkl_files)
     return dico
 
+
 @app.post("/predict-image-str")
-def predict_image(string):
+async def predict_image_str(request: Request):
+    print('toto')
+    data = await request.json()
+    string = data['string']
+    print(string)
     with open("imageToSave.jpg", "wb") as fh:
         fh.write(base64.decodebytes(bytes(string, 'utf-8')))
     im = plt.imread("imageToSave.jpg")
