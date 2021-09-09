@@ -10,7 +10,7 @@ from tensorflow.keras.applications.imagenet_utils import (decode_predictions,
 
 def load_model():
     # loads and returns teh pretrained model # CHANGE PATH
-    filepath = "raw_data/Docker/models/ResNetGCP_9"
+    filepath = "raw_data/Docker/models/2-VGG-Final"
     model = load_keras_model(filepath)
     # compile=True, options=None)
     return model
@@ -31,7 +31,7 @@ def predict(image, model):
     resultat = pd.DataFrame(model.predict(image)).T
 
     # Load prediction table of species
-    infile = open("raw_data/Docker/species_table",'rb')
+    infile = open("raw_data/Docker/train_names.pickle",'rb')
     table = pickle.load(infile)
     infile.close()
 
