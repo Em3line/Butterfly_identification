@@ -2,7 +2,12 @@
 .coverage
 .ipynb_checkpoints
 .DS_Store
-raw_data/
+raw_data/IGM_labels
+raw_data/IMG
+raw_data/splits
+raw_data/Docker/models
+raw_data/Docker/wetransfer_api_ftw_2021-09-03_0917.zip
 *.csv
 **/__pycache__/
 .env
+*.pkl

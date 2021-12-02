@@ -39,7 +39,7 @@ def predict(image, model):
     total = resultat.merge(table, right_index=True, left_index=True)
     total.columns = ['score', 'species']
     #= Créer la table de correspondance avec les noms communs
-    table_nom_commun = pd.read_json(PATH + 'table_commun.json')
+    table_nom_commun = pd.read_json(PATH + 'Docker/table_commun.json')
     table_nom_commun = table_nom_commun.replace(' ', '_', regex = True)
     table_nom_commun.columns = ['species', 'nom_commun']
 
@@ -49,6 +49,7 @@ def predict(image, model):
 
     # Sort results and keep the 5 better = CHECK THE NUMBER TO KEEP
     total_sort = total_sort.set_index('species', drop = True).to_dict()['score']
+    print(f'tableau prédiction avec nom commun : {total_sort}')
     return total_sort
 
 
@@ -57,7 +58,7 @@ def predict(image, model):
 
 def get_prediction_pictures(species, path = PATH):
     ''' This function take one species, the path of the photos folder and the number of photos to return and create a pickle file with the number of photos by species and return the path of this pickle file'''
-    new_path = path + 'Docker/Photos/' + species
+    new_path = path + 'IGM_labels/Train/' + species
     all_photos = os.listdir(new_path)
     file = open(path + 'Pickle/' + f'pickle_{species}.pkl','wb')
     dico = {}

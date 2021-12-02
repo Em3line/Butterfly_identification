@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import pickle
 from tensorflow.keras.applications.imagenet_utils import (decode_predictions)
-from model import load_model, predict, prepare_image, get_prediction_pictures
+from model import  predict, prepare_image, get_prediction_pictures,load_model
 from pydantic import BaseModel
 from typing import List
 from io import BytesIO, StringIO
@@ -12,7 +12,6 @@ from PIL import Image
 from fastapi import FastAPI, File, HTTPException, UploadFile
 import uvicorn
 import matplotlib.pyplot as plt
-
 # bloc ci-dessous décomenté lors du fonctionnement de l'api alexandre
 model = load_model()
 
@@ -49,6 +48,8 @@ def predict_image(url):
         nom_latin = i
         pkl_files = get_prediction_pictures(i)
         dico[prediction[i]] = (nom_latin, pkl_files)
+    print(50*'-')    
+    print(f'Retour API : {dico}')
     return dico
 
 
